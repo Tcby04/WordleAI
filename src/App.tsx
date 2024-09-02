@@ -1,26 +1,207 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from './components/ui/button';
+import { useWordleAI } from './WordleAI';
+import { AIBoard } from './AIBoard';
+import { GameBoard } from './GameBoard';
+import { Alert } from './components/ui/alert';
+import { OptionsModal } from './OptionsModal';
 
-function App() {
+const AI_DELAY_MS = 1000;
+
+interface Score {
+  wins: number;
+  losses: number;
+}
+
+type GameMode = 'normal' | 'aiOnly' | 'hiddenAI';
+
+const App: React.FC = () => {
+  const [words, setWords] = useState<string[]>([]);
+  const [solution, setSolution] = useState('');
+  const [scores, setScores] = useState<Score[]>([
+    { wins: 0, losses: 0 },
+    { wins: 0, losses: 0 }
+  ]);
+  const [isTraining, setIsTraining] = useState(false);
+  const [showProbabilities, setShowProbabilities] = useState(false);
+  const [humanGuessed, setHumanGuessed] = useState(false);
+  const [gameStatus, setGameStatus] = useState<string | null>(null);
+  const [gameKey, setGameKey] = useState(0);
+  const [gameMode, setGameMode] = useState<GameMode>('normal');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const ai = useWordleAI(words);
+
+  const getRandomWord = useCallback(() => {
+    if (words.length > 0) {
+      return words[Math.floor(Math.random() * words.length)];
+    }
+    return '';
+  }, [words]);
+
+  const startNewGame = useCallback(() => {
+    const newSolution = getRandomWord();
+    if (newSolution) {
+      setSolution(newSolution);
+      setHumanGuessed(false);
+      setGameStatus(null);
+      setGameKey(prevKey => prevKey + 1);
+      if (ai) {
+        ai.resetState();
+      }
+    }
+  }, [getRandomWord, ai]);
+
+  useEffect(() => {
+    console.log('Loading words...');
+    fetch('/five_letter_words.txt')
+      .then(response => response.text())
+      .then(text => {
+        const wordSet = new Set<string>();
+        const lines = text.split('\n');
+
+        lines.forEach((word) => {
+          const cleanedWord = word.trim().toUpperCase();
+          if (cleanedWord.length === 5 && /^[A-Z]+$/.test(cleanedWord)) {
+            wordSet.add(cleanedWord);
+          }
+        });
+
+        const loadedWords = Array.from(wordSet);
+        if (loadedWords.length > 0) {
+          setWords(loadedWords);
+        } else {
+          console.error('No valid words loaded');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading words:', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (words.length > 0 && !ai) {
+      setIsTraining(true);
+    }
+  }, [words, ai]);
+
+  useEffect(() => {
+    if (ai && isTraining) {
+      setIsTraining(false);
+      startNewGame();
+    }
+  }, [ai, isTraining, startNewGame]);
+
+  useEffect(() => {
+    if (words.length > 0) {
+      const newSolution = getRandomWord();
+      setSolution(newSolution);
+    }
+  }, [words, getRandomWord]);
+
+  const handleWin = (boardId: number) => {
+    setScores(prevScores => {
+      const newScores = [...prevScores];
+      newScores[boardId].wins += 1;
+      return newScores;
+    });
+    setGameStatus(`${boardId === 0 ? 'You' : 'The AI'} guessed the word!`);
+    if (gameMode === 'aiOnly') {
+      setTimeout(startNewGame, AI_DELAY_MS);
+    }
+  };
+
+  const handleLose = (boardId: number) => {
+    setScores(prevScores => {
+      const newScores = [...prevScores];
+      newScores[boardId].losses += 1;
+      return newScores;
+    });
+    setGameStatus(`Game over for ${boardId === 0 ? 'you' : 'the AI'}! The word was ${solution}.`);
+    if (gameMode === 'aiOnly') {
+      setTimeout(startNewGame, AI_DELAY_MS);
+    }
+  };
+
+  const handleHumanGuess = useCallback(() => {
+    setHumanGuessed(prevState => !prevState);
+  }, []);
+
+  const handleSelectOption = (option: GameMode) => {
+    setGameMode(option);
+    setIsModalOpen(false);
+    startNewGame();
+  };
+
+  if (isTraining) {
+    return <div className="min-h-screen bg-purple-900 text-white flex items-center justify-center">Training AI...</div>;
+  }
+
+  if (words.length === 0) {
+    return (
+      <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold mb-8">Error: No valid words loaded</h1>
+        <p>Please check the console for more information.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center p-4">
+      <h1 className="text-4xl font-bold mb-8">Human vs AI Wordle</h1>
+      <div className="flex justify-between w-full max-w-4xl mb-4">
+        <div className="text-xl ">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
+        <div className="text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
+      </div>
+      <div className="flex gap-4 mb-4 justify-between">
+   
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-purple-700 hover:bg-purple-600"
         >
-          Learn React
-        </a>
-      </header>
+          Game Options
+        </Button>
+      </div>
+      <div className="flex justify-center gap-8">
+        {gameMode !== 'aiOnly' && (
+          <GameBoard 
+            key={`human-${gameKey}`}
+            solution={solution} 
+            onWin={() => handleWin(0)} 
+            onLose={() => handleLose(0)} 
+            boardId={1}
+            onGuess={handleHumanGuess}
+          />
+        )}
+        <AIBoard 
+          key={`ai-${gameKey}`}
+          solution={solution} 
+          onWin={() => handleWin(1)} 
+          onLose={() => handleLose(1)} 
+          boardId={2}
+          ai={ai}
+          showProbabilities={showProbabilities}
+          humanGuessed={gameMode === 'aiOnly' ? true : humanGuessed}
+          isHidden={gameMode === 'hiddenAI'}
+        />
+      </div>
+      {gameStatus && (
+        <Alert className="mt-4 mb-4">
+          {gameStatus}
+        </Alert>
+      )}
+      {gameMode !== 'aiOnly' && (
+        <Button onClick={startNewGame} className="mt-4 bg-purple-700 hover:bg-purple-600">
+          Next Word
+        </Button>
+      )}
+      <OptionsModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelectOption={handleSelectOption}
+      />
     </div>
   );
-}
+};
 
 export default App;
