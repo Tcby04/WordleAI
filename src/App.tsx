@@ -170,29 +170,46 @@ const App: React.FC = () => {
         </Button>
       </div>
       <div className="flex justify-center gap-8">
-        {(gameMode === 'turnBased' || gameMode === 'normal') && (
-          <GameBoard 
-            key={`human-${gameKey}`}
+        {/* Always render the GameBoard for human player */}
+        <GameBoard 
+          key={`human-${gameKey}`}
+          solution={solution} 
+          onWin={() => handleWin(0)} 
+          onLose={() => handleLose(0)} 
+          boardId={1}
+          onGuess={handleHumanGuess}
+          isActive={gameMode === 'normal' || gameMode === 'hiddenAI' || (gameMode === 'turnBased' && humanTurn)}
+        />
+        {/* Render AIBoard for all modes except 'hiddenAI' */}
+        {gameMode !== 'hiddenAI' && (
+          <AIBoard 
+            key={`ai-${gameKey}`}
             solution={solution} 
-            onWin={() => handleWin(0)} 
-            onLose={() => handleLose(0)} 
-            boardId={1}
-            onGuess={handleHumanGuess}
-            isActive={gameMode === 'normal' || (gameMode === 'turnBased' && humanTurn)}
+            onWin={() => handleWin(1)} 
+            onLose={() => handleLose(1)} 
+            boardId={2}
+            ai={ai}
+            showProbabilities={showProbabilities}
+            humanGuessed={gameMode === 'aiOnly' || (gameMode === 'turnBased' && !humanTurn)}
+            isHidden={false}
+            onGuess={handleAIGuess}
           />
         )}
-        <AIBoard 
-          key={`ai-${gameKey}`}
-          solution={solution} 
-          onWin={() => handleWin(1)} 
-          onLose={() => handleLose(1)} 
-          boardId={2}
-          ai={ai}
-          showProbabilities={showProbabilities}
-          humanGuessed={gameMode === 'aiOnly' || (gameMode === 'turnBased' && !humanTurn)}
-          isHidden={gameMode === 'hiddenAI'}
-          onGuess={handleAIGuess}
-        />
+        {/* Render a blurred AIBoard for 'hiddenAI' mode */}
+        {gameMode === 'hiddenAI' && (
+          <AIBoard 
+            key={`ai-hidden-${gameKey}`}
+            solution={solution} 
+            onWin={() => handleWin(1)} 
+            onLose={() => handleLose(1)} 
+            boardId={2}
+            ai={ai}
+            showProbabilities={false}
+            humanGuessed={true}
+            isHidden={true}
+            onGuess={handleAIGuess}
+          />
+        )}
       </div>
       {gameStatus && (
         <Alert className="mt-4 mb-4">
