@@ -155,11 +155,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8">Human vs AI Wordle</h1>
-      <div className="flex justify-between w-full max-w-4xl mb-4">
-        <div className="text-xl">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
-        <div className="text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
+    <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center p-4 overflow-x-hidden">
+      <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-8 text-center">Human vs AI Wordle</h1>
+      <div className="flex flex-col md:flex-row justify-between w-full max-w-4xl mb-4 text-center md:text-left">
+        <div className="text-lg md:text-xl mb-2 md:mb-0">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
+        <div className="text-lg md:text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
       </div>
       <div className="flex gap-4 mb-4 justify-between">
         <Button
@@ -216,8 +216,9 @@ const App: React.FC = () => {
           {gameStatus}
         </Alert>
       )}
+      
       {gameMode !== 'aiOnly' && (
-        <Button onClick={startNewGame} className="mt-4 bg-purple-700 hover:bg-purple-600">
+        <Button onClick={startNewGame} className="mt-4 bg-purple-700 hover:bg-purple-600 w-full md:w-auto">
           Next Word
         </Button>
       )}

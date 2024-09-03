@@ -176,9 +176,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4">Board {boardId} (Human)</h2>
-      <div className={`grid gap-2 mb-4 ${shake ? 'animate-shake' : ''}`}>
+    <div className="flex flex-col items-center w-full max-w-xs md:max-w-none">
+      <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Board {boardId} (Human)</h2>
+      <div className={`grid gap-1 md:gap-2 mb-2 md:mb-4 ${shake ? 'animate-shake' : ''}`}>
         {guesses.map((guess, i) => (
           <div key={i} className="flex gap-2">
             {Array.from({ length: WORD_LENGTH }).map((_, j) => (
@@ -200,7 +200,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
           </div>
         ))}
       </div>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-2 md:mb-4 flex gap-2 w-full">
         <Input
           ref={inputRef}
           type="text"

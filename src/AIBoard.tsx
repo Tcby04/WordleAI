@@ -165,15 +165,15 @@ export const AIBoard: React.FC<AIBoardProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center ${isHidden ? 'filter blur-md pointer-events-none' : ''}`}>
-      <h2 className="text-2xl font-bold mb-4">Board {boardId} (AI)</h2>
-      <div className="grid gap-2 mb-4">
+    <div className={`flex flex-col items-center w-full max-w-xs md:max-w-none ${isHidden ? 'filter blur-md pointer-events-none' : ''}`}>
+      <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Board {boardId} (AI)</h2>
+      <div className="grid gap-1 md:gap-2 mb-2 md:mb-4">
         {guesses.map((guess, i) => (
           <div key={i} className="flex gap-2">
             {Array.from({ length: WORD_LENGTH }).map((_, j) => (
               <div
                 key={j}
-                className={`w-12 h-12 border-2 flex items-center justify-center text-2xl font-bold transition-all duration-500 ${
+                className={`w-10 h-10 md:w-12 md:h-12 border-2 flex items-center justify-center text-lg md:text-2xl font-bold transition-all duration-500 ${
                   guess
                     ? getLetterColor(guess[j], j, guess)
                     : 'border-purple-700'
