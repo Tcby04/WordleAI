@@ -13,7 +13,7 @@ interface Score {
   losses: number;
 }
 
-type GameMode = 'normal' | 'aiOnly' | 'hiddenAI';
+type GameMode = 'turnBased' | 'normal' | 'aiOnly' | 'hiddenAI';
 
 const App: React.FC = () => {
   const [words, setWords] = useState<string[]>([]);
@@ -24,10 +24,10 @@ const App: React.FC = () => {
   ]);
   const [isTraining, setIsTraining] = useState(false);
   const [showProbabilities, setShowProbabilities] = useState(false);
-  const [humanGuessed, setHumanGuessed] = useState(false);
+  const [humanTurn, setHumanTurn] = useState(true);
   const [gameStatus, setGameStatus] = useState<string | null>(null);
   const [gameKey, setGameKey] = useState(0);
-  const [gameMode, setGameMode] = useState<GameMode>('normal');
+  const [gameMode, setGameMode] = useState<GameMode>('turnBased');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const ai = useWordleAI(words);
@@ -43,7 +43,7 @@ const App: React.FC = () => {
     const newSolution = getRandomWord();
     if (newSolution) {
       setSolution(newSolution);
-      setHumanGuessed(false);
+      setHumanTurn(true);
       setGameStatus(null);
       setGameKey(prevKey => prevKey + 1);
       if (ai) {
@@ -124,8 +124,16 @@ const App: React.FC = () => {
   };
 
   const handleHumanGuess = useCallback(() => {
-    setHumanGuessed(prevState => !prevState);
-  }, []);
+    if (gameMode === 'turnBased') {
+      setHumanTurn(false);
+    }
+  }, [gameMode]);
+
+  const handleAIGuess = useCallback(() => {
+    if (gameMode === 'turnBased') {
+      setHumanTurn(true);
+    }
+  }, [gameMode]);
 
   const handleSelectOption = (option: GameMode) => {
     setGameMode(option);
@@ -150,11 +158,10 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center p-4">
       <h1 className="text-4xl font-bold mb-8">Human vs AI Wordle</h1>
       <div className="flex justify-between w-full max-w-4xl mb-4">
-        <div className="text-xl ">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
+        <div className="text-xl">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
         <div className="text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
       </div>
       <div className="flex gap-4 mb-4 justify-between">
-   
         <Button
           onClick={() => setIsModalOpen(true)}
           className="bg-purple-700 hover:bg-purple-600"
@@ -163,7 +170,7 @@ const App: React.FC = () => {
         </Button>
       </div>
       <div className="flex justify-center gap-8">
-        {gameMode !== 'aiOnly' && (
+        {(gameMode === 'turnBased' || gameMode === 'normal') && (
           <GameBoard 
             key={`human-${gameKey}`}
             solution={solution} 
@@ -171,6 +178,7 @@ const App: React.FC = () => {
             onLose={() => handleLose(0)} 
             boardId={1}
             onGuess={handleHumanGuess}
+            isActive={gameMode === 'normal' || (gameMode === 'turnBased' && humanTurn)}
           />
         )}
         <AIBoard 
@@ -181,8 +189,9 @@ const App: React.FC = () => {
           boardId={2}
           ai={ai}
           showProbabilities={showProbabilities}
-          humanGuessed={gameMode === 'aiOnly' ? true : humanGuessed}
+          humanGuessed={gameMode === 'aiOnly' || (gameMode === 'turnBased' && !humanTurn)}
           isHidden={gameMode === 'hiddenAI'}
+          onGuess={handleAIGuess}
         />
       </div>
       {gameStatus && (

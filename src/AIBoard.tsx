@@ -12,11 +12,12 @@ interface AIBoardProps {
   showProbabilities: boolean;
   humanGuessed: boolean;
   isHidden: boolean;
+  onGuess: () => void;
 }
 
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
-const AI_DELAY_MS = 1000; // 0.5 second delay
+const AI_DELAY_MS = 1000; // 1 second delay
 
 const KEYBOARD_ROWS = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -32,7 +33,8 @@ export const AIBoard: React.FC<AIBoardProps> = ({
   ai, 
   showProbabilities, 
   humanGuessed,
-  isHidden
+  isHidden,
+  onGuess
 }) => {
   const [guesses, setGuesses] = useState<string[]>(Array(MAX_GUESSES).fill(null));
   const [currentRow, setCurrentRow] = useState(0);
@@ -108,7 +110,9 @@ export const AIBoard: React.FC<AIBoardProps> = ({
     } else {
       setCurrentRow(prev => prev + 1);
     }
-  }, [ai, currentRow, guesses, solution, onWin, onLose, gameOver, usedLetters]);
+
+    onGuess(); // Notify parent that AI has made a guess
+  }, [ai, currentRow, guesses, solution, onWin, onLose, gameOver, usedLetters, onGuess]);
 
   useEffect(() => {
     if (ai && !gameOver && currentRow < MAX_GUESSES && humanGuessed) {

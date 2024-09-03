@@ -8,6 +8,7 @@ interface GameBoardProps {
   onLose: () => void;
   boardId: number;
   onGuess: () => void;
+  isActive: boolean;
 }
 
 const WORD_LENGTH = 5;
@@ -23,7 +24,7 @@ interface UsedLetters {
   [key: string]: 'correct' | 'present' | 'absent' | 'unused';
 }
 
-export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, boardId, onGuess }) => {
+export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, boardId, onGuess, isActive }) => {
   const [guesses, setGuesses] = useState<string[]>(Array(MAX_GUESSES).fill(null));
   const [currentGuess, setCurrentGuess] = useState('');
   const [usedLetters, setUsedLetters] = useState<UsedLetters>({});
@@ -42,7 +43,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
   }, [solution]);
 
   const handleGuess = useCallback(() => {
-    if (currentGuess.length !== WORD_LENGTH) {
+    if (currentGuess.length !== WORD_LENGTH || !isActive || gameOver) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
@@ -98,27 +99,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
 
     setCurrentGuess('');
     onGuess(); // Notify parent that a guess has been made
-  }, [currentGuess, guesses, currentRow, usedLetters, solution, onWin, onLose, onGuess]);
+  }, [currentGuess, guesses, currentRow, usedLetters, solution, onWin, onLose, onGuess, isActive, gameOver]);
 
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && isActive) {
       inputRef.current.focus();
     }
-  }, [currentRow]);
+  }, [currentRow, isActive]);
 
   const handleKeyPress = (letter: string) => {
-    if (gameOver) return;
+    if (gameOver || !isActive) return;
     if (currentGuess.length < WORD_LENGTH) {
       setCurrentGuess((oldGuess) => oldGuess + letter);
     }
   };
 
   const handleBackspace = () => {
+    if (!isActive) return;
     setCurrentGuess((oldGuess) => oldGuess.slice(0, -1));
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (gameOver) return;
+    if (gameOver || !isActive) return;
     if (event.key === 'Enter') {
       handleGuess();
     } else if (event.key === 'Backspace') {
@@ -208,9 +210,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
           className="bg-purple-800 border-purple-600 text-white"
           placeholder="Type your guess"
           maxLength={WORD_LENGTH}
-          disabled={gameOver}
+          disabled={gameOver || !isActive}
         />
-        <Button onClick={handleGuess} disabled={gameOver || currentGuess.length !== WORD_LENGTH}>
+        <Button onClick={handleGuess} disabled={gameOver || !isActive || currentGuess.length !== WORD_LENGTH}>
           Guess
         </Button>
       </div>
@@ -222,17 +224,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
                 key={letter}
                 onClick={() => handleKeyPress(letter)}
                 className={`w-8 h-10 transition-colors duration-300 ${getKeyColor(letter)}`}
-                disabled={gameOver}
+                disabled={gameOver || !isActive}
               >
                 {letter}
               </Button>
             ))}
             {i === 2 && (
               <>
-                <Button onClick={handleBackspace} className="px-2 bg-purple-700" disabled={gameOver}>
+                <Button onClick={handleBackspace} className="px-2 bg-purple-700" disabled={gameOver || !isActive}>
                   ←
                 </Button>
-                <Button onClick={handleGuess} className="px-2 bg-purple-700" disabled={gameOver || currentGuess.length !== WORD_LENGTH}>
+                <Button onClick={handleGuess} className="px-2 bg-purple-700" disabled={gameOver || !isActive || currentGuess.length !== WORD_LENGTH}>
                   Enter
                 </Button>
               </>

@@ -4,7 +4,7 @@ import { Button } from './components/ui/button';
 interface OptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectOption: (option: 'normal' | 'aiOnly' | 'hiddenAI') => void;
+  onSelectOption: (option: 'turnBased' | 'normal' | 'aiOnly' | 'hiddenAI') => void;
 }
 
 export const OptionsModal: React.FC<OptionsModalProps> = ({ isOpen, onClose, onSelectOption }) => {
@@ -15,6 +15,12 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({ isOpen, onClose, onS
       <div className="bg-purple-800 p-6 rounded-lg shadow-xl">
         <h2 className="text-2xl font-bold mb-4">Game Options</h2>
         <div className="space-y-4">
+          <Button 
+            onClick={() => onSelectOption('turnBased')} 
+            className="w-full bg-purple-600 hover:bg-purple-700"
+          >
+            Turn-Based Mode
+          </Button>
           <Button 
             onClick={() => onSelectOption('normal')} 
             className="w-full bg-purple-600 hover:bg-purple-700"
