@@ -169,7 +169,7 @@ const App: React.FC = () => {
           Game Options
         </Button>
       </div>
-      <div className="flex justify-center gap-8">
+      <div className="flex flex-col md:flex-row justify-center gap-8 w-full max-w-4xl">
         {/* Always render the GameBoard for human player */}
         <GameBoard 
           key={`human-${gameKey}`}

@@ -176,7 +176,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-xs md:max-w-none">
+    <div className="flex flex-col items-center w-full max-w-xs mx-auto md:max-w-none">
       <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Board {boardId} (Human)</h2>
       <div className={`grid gap-1 md:gap-2 mb-2 md:mb-4 ${shake ? 'animate-shake' : ''}`}>
         {guesses.map((guess, i) => (
@@ -184,7 +184,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
             {Array.from({ length: WORD_LENGTH }).map((_, j) => (
               <div
                 key={j}
-                className={`w-12 h-12 border-2 flex items-center justify-center text-2xl font-bold transition-all duration-500 ${
+                className={`w-10 h-10 md:w-12 md:h-12 border-2 flex items-center justify-center text-lg md:text-2xl font-bold transition-all duration-500 ${
                   guess
                     ? getLetterColor(guess[j], j, guess)
                     : i === currentRow
