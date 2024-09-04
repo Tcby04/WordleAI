@@ -12,7 +12,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({ isOpen, onClose, onS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-purple-800 p-6 rounded-lg shadow-xl">
+      <div className="bg-purple-800 p-6 rounded-lg shadow-xl relative z-60">
         <h2 className="text-2xl font-bold mb-4">Game Options</h2>
         <div className="space-y-4">
           <Button 

@@ -176,7 +176,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ solution, onWin, onLose, b
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-xs mx-auto md:max-w-none">
+    <div className="flex flex-col items-center w-full max-w-xs mx-auto md:max-w-none relative z-10">
       <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Board {boardId} (Human)</h2>
       <div className={`grid gap-1 md:gap-2 mb-2 md:mb-4 ${shake ? 'animate-shake' : ''}`}>
         {guesses.map((guess, i) => (

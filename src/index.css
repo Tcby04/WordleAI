@@ -73,6 +73,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-purple-900 z-0 text-purple-50;
   }
 }

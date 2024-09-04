@@ -5,6 +5,7 @@ import { AIBoard } from './AIBoard';
 import { GameBoard } from './GameBoard';
 import { Alert } from './components/ui/alert';
 import { OptionsModal } from './OptionsModal';
+import WaveBackground from './WaveBackground'; // Import the WaveBackground component
 
 const AI_DELAY_MS = 1000;
 
@@ -155,79 +156,82 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center p-4 overflow-x-hidden">
-      <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-8 text-center">Human vs AI Wordle</h1>
-      <div className="flex flex-col md:flex-row justify-between w-full max-w-4xl mb-4 text-center md:text-left">
-        <div className="text-lg md:text-xl mb-2 md:mb-0">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
-        <div className="text-lg md:text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
-      </div>
-      <div className="flex gap-4 mb-4 justify-between">
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-purple-700 hover:bg-purple-600"
-        >
-          Game Options
-        </Button>
-      </div>
-      <div className="flex flex-col md:flex-row justify-center gap-8 w-full max-w-4xl">
-        {/* Always render the GameBoard for human player */}
-        <GameBoard 
-          key={`human-${gameKey}`}
-          solution={solution} 
-          onWin={() => handleWin(0)} 
-          onLose={() => handleLose(0)} 
-          boardId={1}
-          onGuess={handleHumanGuess}
-          isActive={gameMode === 'normal' || gameMode === 'hiddenAI' || (gameMode === 'turnBased' && humanTurn)}
+    <>
+      <WaveBackground />
+      <div className="App min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
+        <h1 className="text-3xl font-bold mb-4 text-purple-100">Human vs AI Wordle</h1>
+        <div className="flex flex-col md:flex-row justify-between w-full max-w-4xl mb-4 text-center md:text-left">
+          <div className="text-lg md:text-xl mb-2 md:mb-0">Human - Wins: {scores[0].wins} Losses: {scores[0].losses}</div>
+          <div className="text-lg md:text-xl">AI - Wins: {scores[1].wins} Losses: {scores[1].losses}</div>
+        </div>
+        <div className="flex gap-4 mb-4 justify-between">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-purple-700 hover:bg-purple-600"
+          >
+            Game Options
+          </Button>
+        </div>
+        <div className="flex flex-col md:flex-row justify-center gap-8 w-full max-w-4xl relative z-20">
+          {/* Always render the GameBoard for human player */}
+          <GameBoard 
+            key={`human-${gameKey}`}
+            solution={solution} 
+            onWin={() => handleWin(0)} 
+            onLose={() => handleLose(0)} 
+            boardId={1}
+            onGuess={handleHumanGuess}
+            isActive={gameMode === 'normal' || gameMode === 'hiddenAI' || (gameMode === 'turnBased' && humanTurn)}
+          />
+          {/* Render AIBoard for all modes except 'hiddenAI' */}
+          {gameMode !== 'hiddenAI' && (
+            <AIBoard 
+              key={`ai-${gameKey}`}
+              solution={solution} 
+              onWin={() => handleWin(1)} 
+              onLose={() => handleLose(1)} 
+              boardId={2}
+              ai={ai}
+              showProbabilities={showProbabilities}
+              humanGuessed={gameMode === 'aiOnly' || (gameMode === 'turnBased' && !humanTurn)}
+              isHidden={false}
+              onGuess={handleAIGuess}
+            />
+          )}
+          {/* Render a blurred AIBoard for 'hiddenAI' mode */}
+          {gameMode === 'hiddenAI' && (
+            <AIBoard 
+              key={`ai-hidden-${gameKey}`}
+              solution={solution} 
+              onWin={() => handleWin(1)} 
+              onLose={() => handleLose(1)} 
+              boardId={2}
+              ai={ai}
+              showProbabilities={false}
+              humanGuessed={true}
+              isHidden={true}
+              onGuess={handleAIGuess}
+            />
+          )}
+        </div>
+        {gameStatus && (
+          <Alert className="mt-4 mb-4">
+            {gameStatus}
+          </Alert>
+        )}
+        
+        {gameMode !== 'aiOnly' && (
+          <Button onClick={startNewGame} className="mt-4 bg-purple-700 hover:bg-purple-600 w-full md:w-auto">
+            Next Word
+          </Button>
+        )}
+        <OptionsModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSelectOption={handleSelectOption}
         />
-        {/* Render AIBoard for all modes except 'hiddenAI' */}
-        {gameMode !== 'hiddenAI' && (
-          <AIBoard 
-            key={`ai-${gameKey}`}
-            solution={solution} 
-            onWin={() => handleWin(1)} 
-            onLose={() => handleLose(1)} 
-            boardId={2}
-            ai={ai}
-            showProbabilities={showProbabilities}
-            humanGuessed={gameMode === 'aiOnly' || (gameMode === 'turnBased' && !humanTurn)}
-            isHidden={false}
-            onGuess={handleAIGuess}
-          />
-        )}
-        {/* Render a blurred AIBoard for 'hiddenAI' mode */}
-        {gameMode === 'hiddenAI' && (
-          <AIBoard 
-            key={`ai-hidden-${gameKey}`}
-            solution={solution} 
-            onWin={() => handleWin(1)} 
-            onLose={() => handleLose(1)} 
-            boardId={2}
-            ai={ai}
-            showProbabilities={false}
-            humanGuessed={true}
-            isHidden={true}
-            onGuess={handleAIGuess}
-          />
-        )}
       </div>
-      {gameStatus && (
-        <Alert className="mt-4 mb-4">
-          {gameStatus}
-        </Alert>
-      )}
-      
-      {gameMode !== 'aiOnly' && (
-        <Button onClick={startNewGame} className="mt-4 bg-purple-700 hover:bg-purple-600 w-full md:w-auto">
-          Next Word
-        </Button>
-      )}
-      <OptionsModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSelectOption={handleSelectOption}
-      />
-    </div>
+    </>
   );
 };
 

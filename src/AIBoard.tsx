@@ -165,7 +165,7 @@ export const AIBoard: React.FC<AIBoardProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center w-full max-w-xs mx-auto md:max-w-none ${isHidden ? 'filter blur-md pointer-events-none' : ''}`}>
+    <div className={`flex flex-col items-center w-full max-w-xs mx-auto md:max-w-none relative z-10 ${isHidden ? 'opacity-0' : ''}`}>
       <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">Board {boardId} (AI)</h2>
       <div className="grid gap-1 md:gap-2 mb-2 md:mb-4">
         {guesses.map((guess, i) => (
